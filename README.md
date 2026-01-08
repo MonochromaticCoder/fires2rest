@@ -2,6 +2,8 @@
 
 Fires2REST (Firestore REST with Transactions) is a TypeScript library that provides a simple and efficient way to perform transactions and other operations on Firestore documents using the REST API.
 
+It's a drop-in replacement for the official Firebase Admin SDK (the Firestore part), see [the comparison](./ref).
+
 ## Why "Fires2REST"
 
 Firestore REST with Transactions → Firestore RES**T** → FirestoREST → Fires2REST
