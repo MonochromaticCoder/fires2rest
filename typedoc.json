@@ -1,0 +1,18 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": ["./src/index.ts"],
+    "out": "./docs",
+    "name": "Fires2REST",
+    "readme": "./README.md",
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeInternal": true,
+    "includeVersion": true,
+    "categorizeByGroup": true,
+    "searchInComments": true,
+    "navigationLinks": {
+        "GitHub": "https://github.com/JacobLinCool/firestore-rest-transaction"
+    },
+    "plugin": [],
+    "skipErrorChecking": true
+}
