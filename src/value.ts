@@ -22,6 +22,7 @@ import type {
     FirestoreValue,
     MapValue,
 } from "./types.js";
+import { quoteFieldPathSegment } from "./utils.js";
 
 // Re-export from field-value
 export {
@@ -222,7 +223,8 @@ export function extractFieldTransforms(
     const transforms: FieldTransform[] = [];
 
     for (const [key, value] of Object.entries(data)) {
-        const fieldPath = pathPrefix ? `${pathPrefix}.${key}` : key;
+        const quotedKey = quoteFieldPathSegment(key);
+        const fieldPath = pathPrefix ? `${pathPrefix}.${quotedKey}` : quotedKey;
 
         if (isFieldValue(value)) {
             const transform = fieldValueToTransform(value, fieldPath);
@@ -310,7 +312,8 @@ export function extractDeleteFields(
     const deletePaths: string[] = [];
 
     for (const [key, value] of Object.entries(data)) {
-        const fieldPath = pathPrefix ? `${pathPrefix}.${key}` : key;
+        const quotedKey = quoteFieldPathSegment(key);
+        const fieldPath = pathPrefix ? `${pathPrefix}.${quotedKey}` : quotedKey;
 
         if (isFieldValue(value) && isDeleteField(value)) {
             deletePaths.push(fieldPath);
@@ -346,7 +349,8 @@ export function extractTransformFields(
     const transformPaths: string[] = [];
 
     for (const [key, value] of Object.entries(data)) {
-        const fieldPath = pathPrefix ? `${pathPrefix}.${key}` : key;
+        const quotedKey = quoteFieldPathSegment(key);
+        const fieldPath = pathPrefix ? `${pathPrefix}.${quotedKey}` : quotedKey;
 
         if (isFieldValue(value) && !isDeleteField(value)) {
             transformPaths.push(fieldPath);
