@@ -24,7 +24,6 @@ export async function createJWT(config: AuthConfig): Promise<string> {
 
         return token;
     } catch (error) {
-        console.error("Error creating JWT:", error);
         throw error;
     }
 }

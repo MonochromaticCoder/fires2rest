@@ -5,6 +5,34 @@
 import type { FirestoreValue } from "./types.js";
 
 /**
+ * Regular expression for valid unquoted Firestore field path segments.
+ * Unquoted segments must start with a letter or underscore, followed by
+ * letters, underscores, or digits.
+ */
+const SIMPLE_FIELD_PATH_REGEX = /^[a-zA-Z_][a-zA-Z_0-9]*$/;
+
+/**
+ * Quote a field path segment if it contains special characters.
+ * Segments that don't match the simple identifier pattern must be quoted with backticks.
+ */
+export function quoteFieldPathSegment(segment: string): string {
+    if (SIMPLE_FIELD_PATH_REGEX.test(segment)) {
+        return segment;
+    }
+    // Escape backticks and backslashes in the segment
+    const escaped = segment.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
+    return `\`${escaped}\``;
+}
+
+/**
+ * Quote a full field path, handling each segment individually.
+ * Splits the path by dots and quotes each segment if needed.
+ */
+export function quoteFieldPath(path: string): string {
+    return path.split(".").map(quoteFieldPathSegment).join(".");
+}
+
+/**
  * Generate a random document ID (20 characters, alphanumeric)
  */
 export function generateDocumentId(): string {
@@ -61,12 +89,13 @@ export function getFieldPaths(
 ): string[] {
     const paths: string[] = [];
     for (const key of Object.keys(obj)) {
+        const quotedKey = quoteFieldPathSegment(key);
         // Check if key contains dots (dot-notation path)
         if (key.includes(".")) {
-            // For dot-notation keys, the entire key is the path
-            paths.push(key);
+            // For dot-notation keys, quote each segment
+            paths.push(quoteFieldPath(key));
         } else {
-            const fullPath = prefix ? `${prefix}.${key}` : key;
+            const fullPath = prefix ? `${prefix}.${quotedKey}` : quotedKey;
             const value = obj[key];
             if (
                 typeof value === "object" &&

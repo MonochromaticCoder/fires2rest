@@ -14,6 +14,8 @@ import {
     generateDocumentId,
     getFieldPaths,
     parseDocumentPath,
+    quoteFieldPath,
+    quoteFieldPathSegment,
 } from "../src/utils.js";
 import { isFieldValue, toFirestoreValue } from "../src/value.js";
 
@@ -84,6 +86,72 @@ describe("utils.ts", () => {
                 "projects/proj/databases/db/documents/col/doc/sub/subdoc",
             );
             expect(result).toBe("col/doc/sub/subdoc");
+        });
+    });
+
+    describe("quoteFieldPathSegment", () => {
+        it("returns simple identifiers unchanged", () => {
+            expect(quoteFieldPathSegment("name")).toBe("name");
+            expect(quoteFieldPathSegment("age")).toBe("age");
+            expect(quoteFieldPathSegment("_private")).toBe("_private");
+            expect(quoteFieldPathSegment("camelCase")).toBe("camelCase");
+            expect(quoteFieldPathSegment("with123numbers")).toBe(
+                "with123numbers",
+            );
+        });
+
+        it("quotes segments with hyphens", () => {
+            expect(quoteFieldPathSegment("item-001")).toBe("`item-001`");
+            expect(quoteFieldPathSegment("my-field")).toBe("`my-field`");
+        });
+
+        it("quotes segments with spaces", () => {
+            expect(quoteFieldPathSegment("my field")).toBe("`my field`");
+        });
+
+        it("quotes segments starting with numbers", () => {
+            expect(quoteFieldPathSegment("123abc")).toBe("`123abc`");
+            expect(quoteFieldPathSegment("0")).toBe("`0`");
+        });
+
+        it("quotes segments with special characters", () => {
+            expect(quoteFieldPathSegment("field[0]")).toBe("`field[0]`");
+            expect(quoteFieldPathSegment("field.name")).toBe("`field.name`");
+            expect(quoteFieldPathSegment("field@domain")).toBe(
+                "`field@domain`",
+            );
+        });
+
+        it("escapes backticks within segments", () => {
+            expect(quoteFieldPathSegment("field`name")).toBe("`field\\`name`");
+        });
+
+        it("escapes backslashes within segments", () => {
+            expect(quoteFieldPathSegment("field\\name")).toBe(
+                "`field\\\\name`",
+            );
+        });
+    });
+
+    describe("quoteFieldPath", () => {
+        it("returns simple paths unchanged", () => {
+            expect(quoteFieldPath("user.name")).toBe("user.name");
+            expect(quoteFieldPath("a.b.c")).toBe("a.b.c");
+        });
+
+        it("quotes individual segments that need quoting", () => {
+            expect(quoteFieldPath("itemsSold.item-001")).toBe(
+                "itemsSold.`item-001`",
+            );
+            expect(quoteFieldPath("data.user-profile.name")).toBe(
+                "data.`user-profile`.name",
+            );
+        });
+
+        it("quotes multiple segments as needed", () => {
+            expect(quoteFieldPath("my-data.item-001")).toBe(
+                "`my-data`.`item-001`",
+            );
         });
     });
 
@@ -166,6 +234,29 @@ describe("utils.ts", () => {
                 isFieldValue,
             );
             expect(paths).toEqual(["parent.name"]);
+        });
+
+        it("quotes keys with hyphens", () => {
+            const paths = getFieldPaths({ "item-001": 5 }, "", isFieldValue);
+            expect(paths).toEqual(["`item-001`"]);
+        });
+
+        it("quotes nested keys with hyphens", () => {
+            const paths = getFieldPaths(
+                { itemsSold: { "item-001": 5 } },
+                "",
+                isFieldValue,
+            );
+            expect(paths).toEqual(["itemsSold.`item-001`"]);
+        });
+
+        it("quotes dot-notation paths with special characters", () => {
+            const paths = getFieldPaths(
+                { "itemsSold.item-001": 5 },
+                "",
+                isFieldValue,
+            );
+            expect(paths).toEqual(["itemsSold.`item-001`"]);
         });
     });
 
@@ -443,6 +534,24 @@ describe("value.ts additional coverage", () => {
                 obsolete: FieldValue.delete(),
             });
             expect(transforms).toHaveLength(0);
+        });
+
+        it("quotes field paths with special characters", () => {
+            const transforms = extractFieldTransforms({
+                "item-001": FieldValue.increment(1),
+            });
+            expect(transforms).toHaveLength(1);
+            expect(transforms[0].fieldPath).toBe("`item-001`");
+        });
+
+        it("quotes nested field paths with special characters", () => {
+            const transforms = extractFieldTransforms({
+                itemsSold: {
+                    "item-001": FieldValue.increment(5),
+                },
+            });
+            expect(transforms).toHaveLength(1);
+            expect(transforms[0].fieldPath).toBe("itemsSold.`item-001`");
         });
     });
 
