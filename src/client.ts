@@ -127,8 +127,8 @@ export class Firestore implements FirestoreClientInterface {
             this._tokenExpiry = Date.now() + 3600 * 1000; // 1 hour
             return this._token;
         } else {
-            // Token/User flow without caching
-            // We rely on the user-provided function to handle caching if needed
+            // Token/User flow: the provided function is invoked for each call.
+            // If the implementation performs its own caching, that behavior will be honored.
             return await this._config.token();
         }
     }
