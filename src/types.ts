@@ -215,7 +215,6 @@ export interface BatchGetResponse {
 // Configuration Types
 // ============================================================================
 
-/** Authentication configuration for Firestore */
 /** Configuration for using a service account */
 export interface ServiceAccountConfig {
     /** The Firebase project ID */
