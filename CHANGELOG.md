@@ -1,5 +1,16 @@
 # fires2rest
 
+## 0.3.0
+
+### Minor Changes
+
+- [#10](https://github.com/JacobLinCool/fires2rest/pull/10) [`83d7810`](https://github.com/JacobLinCool/fires2rest/commit/83d781001694ddcf8c67f00101290b69668a0580) Thanks [@JacobLinCool](https://github.com/JacobLinCool)! - Add Firebase Emulator support with `Firestore.useEmulator()` static factory method
+    - New `useEmulator()` method for connecting to local Firebase emulator
+    - Refactored authentication to use `Auth` interface with `ServiceAccountAuth` and `NoAuth` implementations
+    - New `useServiceAccount()` static factory method for cleaner API
+    - Updated internal methods to use configurable API base URL
+    - Fixed document reads within transactions to use batchGet for proper transactional consistency
+
 ## 0.2.0
 
 ### Minor Changes
