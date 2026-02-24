@@ -1,5 +1,5 @@
 {
-    "name": "fires2rest",
+    "name": "@MonochromaticCoder/fires2rest",
     "version": "0.4.0",
     "description": "Lightweight Firestore REST API client with full transaction support for serverless environments",
     "type": "module",
@@ -20,6 +20,9 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/JacobLinCool/fires2rest.git"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
     },
     "bugs": {
         "url": "https://github.com/JacobLinCool/fires2rest/issues"
