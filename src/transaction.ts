@@ -16,6 +16,7 @@ import { getFieldPaths } from "./utils.js";
 import {
     extractDeleteFields,
     extractFieldTransforms,
+    extractTransformFields,
     isFieldValue,
     toFirestoreFields,
 } from "./value.js";
@@ -115,13 +116,18 @@ export class Transaction {
         const transforms = extractFieldTransforms(
             data as Record<string, unknown>,
         );
+        const transformFields = extractTransformFields(
+            data as Record<string, unknown>,
+        );
 
         // Get all field paths that are being set (not deleted or transformed)
         const fieldPaths = getFieldPaths(
             data as Record<string, unknown>,
             "",
             isFieldValue,
-        ).filter((p) => !deleteFields.includes(p));
+        ).filter(
+            (p) => !deleteFields.includes(p) && !transformFields.includes(p),
+        );
 
         // Build fields, excluding FieldValue sentinels
         const fields = toFirestoreFields(data as Record<string, unknown>);
