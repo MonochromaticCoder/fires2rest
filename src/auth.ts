@@ -59,21 +59,46 @@ export async function getFirestoreToken(
     return data.access_token;
 }
 
+export interface AccessToken {
+    token: string;
+    expiry: number;
+}
+export interface TokenCache {
+    get(): Promise<AccessToken>;
+    set(token: AccessToken): Promise<void>;
+}
+
 export class ServiceAccountAuth implements Auth {
     private _token: string | null = null;
     private _tokenExpiry: number = 0;
 
-    constructor(private readonly _config: ServiceAccountAuthConfig) {}
+    constructor(
+        private readonly _config: ServiceAccountAuthConfig,
+        private readonly _tokenCache: TokenCache = {
+            get: async () => ({
+                token: this._token,
+                expiry: this._tokenExpiry,
+            }),
+            set: async ({ token, expiry }) => {
+                this._token = token;
+                this._tokenExpiry = expiry;
+            },
+        },
+    ) {}
 
     async getToken(): Promise<string> {
-        if (this._token && Date.now() < this._tokenExpiry - 60000) {
-            return this._token;
+        const { token, expiry } = await this._tokenCache.get();
+        if (token && Date.now() < expiry - 60000) {
+            return token;
         }
 
-        this._token = await getFirestoreToken(this._config);
-        this._tokenExpiry = Date.now() + 3600 * 1000; // 1 hour
+        const accessToken = {
+            token: await getFirestoreToken(this._config),
+            expiry: Date.now() + 3600 * 1000,
+        };
+        await this._tokenCache.set(accessToken);
 
-        return this._token;
+        return accessToken.token;
     }
 }
 

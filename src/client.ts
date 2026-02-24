@@ -8,6 +8,7 @@ import {
     NoAuth,
     ServiceAccountAuth,
     ServiceAccountAuthConfig,
+    TokenCache,
 } from "./auth.js";
 import { CollectionReference, DocumentReference } from "./references.js";
 import { Transaction } from "./transaction.js";
@@ -52,12 +53,13 @@ export class Firestore implements FirestoreClientInterface {
         projectId: string,
         config: ServiceAccountAuthConfig,
         databaseId: string = DEFAULT_DATABASE,
+        tokenCache?: TokenCache,
     ): Firestore {
         return new Firestore(
             {
                 apiBaseUrl: DEFAULT_API_BASE,
                 projectId,
-                auth: new ServiceAccountAuth(config),
+                auth: new ServiceAccountAuth(config, tokenCache),
             },
             databaseId,
         );
