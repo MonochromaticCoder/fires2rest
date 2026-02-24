@@ -73,6 +73,9 @@ export class Transaction {
         const transforms = extractFieldTransforms(
             data as Record<string, unknown>,
         );
+        const transformFields = extractTransformFields(
+            data as Record<string, unknown>,
+        );
 
         const write: Write = {
             update: {
@@ -87,7 +90,7 @@ export class Transaction {
                 data as Record<string, unknown>,
                 "",
                 isFieldValue,
-            );
+            ).filter((p) => !transformFields.includes(p));
             write.updateMask = { fieldPaths };
         }
 
