@@ -332,11 +332,12 @@ export class Query<T = DocumentData> {
     /**
      * Executes the query and returns the results.
      */
-    async get(): Promise<QuerySnapshot<T>> {
+    async get(transactionId?: string): Promise<QuerySnapshot<T>> {
         const structuredQuery = this._toStructuredQuery();
         const results = await this._firestore._runQuery(
             this._collectionPath,
             structuredQuery,
+            transactionId,
         );
 
         // Extract documents from results

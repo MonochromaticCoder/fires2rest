@@ -2,12 +2,14 @@
  * Firestore Transaction
  */
 
+import { Query } from "./query.js";
 import { DocumentReference, DocumentSnapshotImpl } from "./references.js";
 import type {
     DocumentData,
     DocumentSnapshot,
     FirestoreClientInterface,
     FirestoreDocument,
+    QuerySnapshot,
     Write,
 } from "./types.js";
 import { getFieldPaths } from "./utils.js";
@@ -46,6 +48,15 @@ export class Transaction {
             this._transactionId,
         );
         return new DocumentSnapshotImpl<T>(doc, ref.path);
+    }
+
+    /**
+     * Run a query within this transaction.
+     */
+    async runQuery<T = DocumentData>(
+        query: Query<T>,
+    ): Promise<QuerySnapshot<T>> {
+        return query.get(this._transactionId);
     }
 
     /**
