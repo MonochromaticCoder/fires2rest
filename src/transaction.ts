@@ -35,7 +35,7 @@ export class Transaction {
                 transactionId?: string,
             ): Promise<FirestoreDocument | null>;
         },
-        private readonly _transactionId: string,
+        private readonly _transactionId: string | undefined,
     ) {}
 
     /**
@@ -44,6 +44,7 @@ export class Transaction {
     async get<T = DocumentData>(
         ref: DocumentReference<T>,
     ): Promise<DocumentSnapshot<T>> {
+        this.ensureNotWriteOnlyTransaction();
         const doc = await this._firestore._getDocument(
             ref.path,
             this._transactionId,
@@ -57,6 +58,7 @@ export class Transaction {
     async runQuery<T = DocumentData>(
         query: Query<T>,
     ): Promise<QuerySnapshot<T>> {
+        this.ensureNotWriteOnlyTransaction();
         return query.get(this._transactionId);
     }
 
@@ -171,5 +173,13 @@ export class Transaction {
     /** @internal */
     _getTransactionId(): string {
         return this._transactionId;
+    }
+
+    private ensureNotWriteOnlyTransaction() {
+        if (!this._transactionId) {
+            throw new Error(
+                "Cannot perform read operation in a write-only transaction",
+            );
+        }
     }
 }

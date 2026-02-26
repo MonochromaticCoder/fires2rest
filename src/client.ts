@@ -105,7 +105,7 @@ export class Firestore implements FirestoreClientInterface {
      */
     async runTransaction<R>(
         updateFn: (transaction: Transaction) => Promise<R>,
-        options?: { maxAttempts?: number },
+        options?: { maxAttempts?: number; writeOnly?: boolean },
     ): Promise<R> {
         const maxAttempts = options?.maxAttempts ?? 5;
         let lastError: Error | null = null;
@@ -114,8 +114,9 @@ export class Firestore implements FirestoreClientInterface {
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
                 // Begin transaction
-                const transactionId =
-                    await this._beginTransaction(retryTransaction);
+                const transactionId = options?.writeOnly
+                    ? undefined
+                    : await this._beginTransaction(retryTransaction);
                 const transaction = new Transaction(this, transactionId);
 
                 // Run user function
@@ -419,7 +420,7 @@ export class Firestore implements FirestoreClientInterface {
 
     /** @internal */
     async _commitTransaction(
-        transactionId: string,
+        transactionId: string | undefined,
         writes: Write[],
     ): Promise<CommitResponse> {
         const database = this._getDatabasePath();
